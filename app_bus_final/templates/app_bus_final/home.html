@@ -1,0 +1,63 @@
+{%extends 'app_bus_final/layout/base.html '%} {% block content %}
+<nav class="navbar navbar-expand-sm">
+  <div class="container-fluid d-flex justify-content-end">
+    <button
+      class="btn btn-success"
+      id="openLinkBtn"
+      onclick="handleButtonClick()"
+    >
+      Ad
+    </button>
+  </div>
+</nav>
+
+<div class="container d-flex justify-content-center">
+  <div>
+    <p class="text-center text-wrap" style="width: 22rem">
+      <b
+        >(if you are a new user just enter your from and to location and search
+        bus)</b
+      >
+    </p>
+    <div class="card usercard">
+      <form action="{% url 'Routesearch' %}">
+        <label for="from"><i class="fa fa-crosshairs"></i>From</label>
+        <input
+          type="text"
+          id="from"
+          placeholder="Eg: palakarai"
+          name="from"
+          required
+        />
+        <label for="to"><i class="fa fa-map-marker"></i>To</label>
+        <input
+          type="text"
+          id="to"
+          placeholder="Eg: central bus stand"
+          name="to"
+          required
+        />
+
+        <button class="usersubmit" type="submit">Search buses</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Initialize click count
+  var clickCount = 0;
+
+  function handleButtonClick() {
+    // Increment the click count
+    clickCount++;
+
+    // Check if the button has been clicked five times
+    if (clickCount === 5) {
+      // Open the link in a new window or tab after the fifth click
+      window.open("{% url 'driver_page' %}"); // Replace with your desired link
+      clickCount = 0;
+    }
+  }
+</script>
+{% endblock content %}

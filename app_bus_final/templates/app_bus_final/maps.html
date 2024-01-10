@@ -1,0 +1,28 @@
+{% extends 'app_bus_final/layout/base.html' %} {% block content %} {% if v %}
+<div id="map" style="height: 100vh; width: 100%">
+  <button
+    id="refreshButton"
+    class="btn btn-danger"
+    style="position: absolute; z-index: 500; top: 20px; right: 20px"
+    onClick="window.location.reload();"
+  >
+    Refresh
+  </button>
+</div>
+
+<script>
+  var map = L.map("map").setView([{{f.latitude}},{{f.longitude}}], 14);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(map);
+</script>
+{% for i in v %} {% for jo in d %} {% if i.route_name == jo.route_number %}
+<script>
+  var marker = L.marker([{{jo.latitude}},{{jo.longitude}}]).addTo(map);
+  var popup = marker.bindPopup('{{jo.driver_number}}');
+</script>
+
+{% endif %} {% endfor %} {% endfor %} {%else%}
+<p>Enter correct location</p>
+{% endif %} {% endblock content %}

@@ -1,0 +1,18 @@
+{%extends 'app_bus_final/layout/base.html'%} {% block content %}
+
+<div class="container d-flex justify-content-center">
+  <div class="card usercard">
+    <form id="driverform">
+      <p><b>route Number: 1m</b></p>
+      <button
+        id="stopbtn"
+        class="stop mt-4"
+        type="button"
+        onclick="clearPosition()"
+      >
+        Stop
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock content %}

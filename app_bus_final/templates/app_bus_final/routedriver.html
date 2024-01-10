@@ -1,0 +1,224 @@
+{%extends 'app_bus_final/layout/base.html'%} {% block content %}
+<nav class="navbar navbar-expand-sm">
+  <div class="container-fluid d-flex justify-content-end">
+    <a class="btn btn-primary" href="{% url 'logout' %}" role="button"
+      >Logout</a
+    >
+    {% comment %}
+    <a class="btn driverbtn" href="{% url 'routedriver' %}" role="button">Ad</a>
+    {% endcomment %}
+  </div>
+</nav>
+<div>{% include 'app_bus_final/inc/message.html' %}</div>
+{% comment %} {%for i in did%}{%if
+request.user.username==i.username%}{%endif%}{%endfor%} {% endcomment %}
+<div class="container d-flex justify-content-center">
+  <div class="card usercard">
+    <form id="driverform">
+      {% csrf_token %}
+      <label id="routelbl" for="route"
+        ><i class="fa fa-crosshairs"></i>Route no:</label
+      >
+
+      <input
+        type="text"
+        id="route"
+        placeholder="Eg: 13a"
+        name="route"
+        onclick="getPosition()"
+        required
+      />
+
+      {% comment %}
+      <label id="driverlbl" for="driver"
+        ><i class="fa fa-crosshairs"></i>Driver no:</label
+      >
+      <input
+        type="text"
+        id="driver"
+        placeholder="Eg: pd01"
+        name="driver"
+        required
+      />
+      {% endcomment %}
+
+      <button id="startbtn" class="start mt-4" type="submit">Start</button>
+
+      <input type="hidden" name="lat" id="lat" />
+      <input type="hidden" name="lon" id="lon" />
+    </form>
+  </div>
+</div>
+<!-- Modal -->
+<div
+  class="modal fade"
+  id="staticBackdrop"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+  aria-labelledby="staticBackdropLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Started</h1>
+      </div>
+      <div class="modal-body">
+        <p><b>Route number: </b> </p>
+        {%for i in did%} {% if i.driver_number == username %}<p>{{i.route_number}}</p>{%endif%}{%endfor%}
+        <br />
+        
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-danger"
+          onclick="stopIntervalAndClearPosition()"
+          data-bs-dismiss="modal"
+        >
+          Stop
+        </button>
+        {% comment %}
+        <a class="btn btn-danger" href="#" data-dismiss="modal" role="button"
+          >Stop</a
+        >
+        {% endcomment %}
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+    var clearId;
+    var intervalId;
+    var user_loc = navigator.geolocation;
+
+    function getPosition() {
+      if (user_loc) {
+        clearId = user_loc.watchPosition(currentLoc);
+      } else {
+        ("Your browser doesn't support Geolocation API.");
+      }
+    }
+
+    function currentLoc(loc) {
+
+      var lat = loc.coords.latitude;
+      var lon = loc.coords.longitude;
+      $('input[name="lat"]').val(lat);
+      $('input[name="lon"]').val(lon);
+    }
+
+    $(document).ready(function(){
+      var usernameExists = false;  // Initialize the variable
+      {% for driver_location in did %}
+    if ("{{ request.user.username }}" === "{{ driver_location.driver_number }}") {
+      usernameExists = true;
+      // No 'break' needed outside a loop
+    }
+  {% endfor %}
+
+  if (usernameExists) {
+      $('#staticBackdrop').modal('show');
+  } else {
+     // pass;
+  }
+
+
+
+  });
+    $("#driverform").submit(function () {
+      event.preventDefault();
+      // Show the modal after the form is submitted
+      $('#staticBackdrop').modal('show');
+      var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
+      var r = $('input[name="route"]').val().trim();
+      var d = '{{ username|default:"" }}'.trim();
+      var lat = $('input[name="lat"]').val().trim();
+      var lon = $('input[name="lon"]').val().trim();
+
+      if (r && d && lat && lon) {
+        // Create Ajax Call
+        $.ajax({
+          url: '{% url "create" %}',
+          data: {
+            routeNumber: r,
+            driverNumber: d,
+            latitude: lat,
+            longitude: lon,
+          },
+          dataType: "json",
+
+        });
+      } else {
+        alert("All fields must have a valid value.");
+      }
+      //$.ajax({
+       // url: '{% url "update" %}',
+        //data: {
+         // driverNumber: d,
+          //latitude: lat,
+          //longitude: lon,
+       // },
+        //dataType: "json",
+     // });
+      $("form#driverform").trigger("reset");
+      return false;
+    });
+    $('#staticBackdrop').on('shown.bs.modal', function () {
+      // This function will be called when the modal is shown
+      startInterval();
+      getPosition();
+    });
+    function startInterval() {
+    intervalId=setInterval(function() {
+      var d = '{{ username|default:"" }}'.trim();
+      var lat = $('input[name="lat"]').val().trim();
+      var lon = $('input[name="lon"]').val().trim();
+      let csrftoken = '{{ csrf_token }}'
+      console.log('Driver Number:', d);
+    console.log('Latitude:', lat);
+    console.log('Longitude:', lon);
+      $.ajax({
+        method: 'POST',
+        headers:{'X-CSRFToken':csrftoken},
+        url: '{% url "update" %}',
+        data: {
+          driverNumber: d,
+          latitude: lat,
+          longitude: lon,
+        },
+        dataType: "json",
+        success: function(response) {
+          console.log('Ajax Success:', response);
+        },
+        error: function(error) {
+          console.log('Ajax Error:', error);
+          console.log('Status:', error.status);
+
+        }
+      });
+    }, 15000); }// 15000 milliseconds = 15 seconds
+    function stopIntervalAndClearPosition() {
+      var d = '{{ username|default:"" }}'.trim();
+      let csrftoken = '{{ csrf_token }}'
+      clearInterval(intervalId);
+      console.log('Interval stopped');
+
+      if (user_loc) {
+        user_loc.clearWatch(clearId);
+        console.log('Geolocation watch cleared');
+      }
+      $.ajax({
+        method: 'POST',
+        headers:{'X-CSRFToken':csrftoken},
+        url: '{% url "delete" %}',
+        data: {
+          driverNumber: d,
+       },
+        dataType: "json",
+      });
+    }
+</script>
+{% endblock content %}

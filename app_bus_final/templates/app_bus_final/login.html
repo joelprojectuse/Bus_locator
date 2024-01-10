@@ -1,0 +1,48 @@
+{%extends 'app_bus_final/layout/base.html '%} {% block content %}
+<div class="container d-flex justify-content-center">
+  <div>
+    <div class="card usercard">
+      {% include 'app_bus_final/inc/message.html' %}
+      <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <label for="username"><i class="fa fa-user"></i>User name:</label>
+        <input
+          type="text"
+          name="username"
+          id="username"
+          class="form-control"
+          placeholder="Enter username"
+          required
+        />
+        <label for="password"><i class="fa fa-key"></i>Password</label>
+        <input
+          type="password"
+          name="password"
+          id="password"
+          class="form-control"
+          placeholder="Enter password"
+          required
+        />
+        <div class="form-check">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            id="rememberMe"
+            name="remember_me"
+          />
+          <label
+            class="form-check-label"
+            for="rememberMe"
+            id="rememberMe"
+            name="remember_me"
+            >Remember Me</label
+          >
+        </div>
+
+        <button class="usersubmit" type="submit">login</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
